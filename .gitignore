@@ -1,0 +1,5 @@
+webapp/node_modules
+webapp/dist
+webapp/.astro
+firmware/build
+firmware/.cache

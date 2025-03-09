@@ -1,0 +1,29 @@
+{
+  "name": "micro-dsp-ui",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "prebuild": "rm -r dist",
+    "build": "astro build",
+    "postbuild": "rm -r dist/{astro,astro.js} && mkdir dist/gz && cp -r dist/*.{html,js} dist/gz/ && gzip dist/gz/*",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "chart.js": "^4.4.8",
+    "nanostores": "^0.11.4",
+    "tailwindcss": "^4.0.12"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.12",
+    "astro": "^5.4.2",
+    "prettier": "^3.5.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^5.8.2"
+  }
+}
