@@ -1,5 +1,6 @@
 #include "cJSON.h"
 #include "config.h"
+#include "esp_heap_caps.h"
 #include "esp_http_server.h"
 #include "esp_log.h"
 #include <stdio.h>
@@ -56,15 +57,15 @@ static esp_err_t global_js_handler(httpd_req_t *req) {
 
 static esp_err_t api_handler(httpd_req_t *req) {
   size_t query_len;
-  query_len = httpd_req_get_url_query_len(req);
+  query_len = httpd_req_get_url_query_len(req) + 1;
 
-  char *query_str = malloc(sizeof(char) * query_len);
+  char *query_str = malloc(query_len);
   httpd_req_get_url_query_str(req, query_str, query_len);
 
-  char val[10];
-  httpd_query_key_value(query_str, "action", val, 10);
+  char action[10];
+  httpd_query_key_value(query_str, "action", action, 10);
 
-  if (strcmp(val, "get_all")) {
+  if (strcmp(action, "get_all") == 0) {
     cJSON *json = cJSON_CreateObject();
     cJSON *lp = cJSON_AddObjectToObject(json, "lowpass");
     cJSON *hp = cJSON_AddObjectToObject(json, "highpass");
@@ -77,10 +78,44 @@ static esp_err_t api_handler(httpd_req_t *req) {
     cJSON_AddNumberToObject(hp, "q", config.hp_q / 32768.0f);
 
     char *resp_buf = cJSON_PrintUnformatted(json);
-
+    cJSON_Delete(json);
+    free(query_str);
     return httpd_resp_send(req, resp_buf, strlen(resp_buf));
   }
-  ESP_LOGW("API CALL", "query string %s, foo %s", query_str, val);
+
+  if (strcmp(action, "set") == 0) {
+    char key[10];
+    httpd_query_key_value(query_str, "key", key, 10);
+
+    char value[10];
+    httpd_query_key_value(query_str, "value", value, 10);
+
+    char type[10];
+    httpd_query_key_value(query_str, "type", type, 10);
+
+    if (strcmp(key, "freq") == 0) {
+      if (strcmp(type, "lowpass") == 0)
+        config.lp_freq = (uint16_t)atoi(value);
+      else
+        config.hp_freq = (uint16_t)atoi(value);
+    }
+    if (strcmp(key, "q") == 0) {
+      if (strcmp(type, "lowpass") == 0)
+        config.lp_q = (uint16_t)atof(value) * 32768;
+      else
+        config.hp_q = (uint16_t)atof(value) * 32768;
+    }
+    if (strcmp(key, "order") == 0) {
+      if (strcmp(type, "lowpass") == 0)
+        config.lp_order = (uint16_t)atoi(value);
+      else
+        config.hp_order = (uint16_t)atoi(value);
+    }
+
+    free(query_str);
+    return httpd_resp_send(req, "ok", 2);
+  }
+  free(query_str);
   return httpd_resp_send(req, "unknown", 7);
 }
 
