@@ -15,8 +15,8 @@ import Layout from "../layouts/default.astro";
       class="grow-1 border-white border-solid border text-white rounded-xl rounded-tl-none p-4 bg-white/5 flex flex-col gap-8"
     >
       <div class="grid grid-cols-2 gap-6">
-        <XPass pass="low" />
-        <XPass pass="high" />
+        <XPass id="lowpass" pass="low" />
+        <XPass id="highpass" pass="high" />
       </div>
       <div class="grid grid-cols-5 gap-4">
         {
@@ -39,14 +39,33 @@ import Layout from "../layouts/default.astro";
     import Chart from "chart.js/auto";
     import { createData } from "../dsp.js";
     import { eq } from "../global.js";
+    import { throttled } from "../utils.js";
+
+    const lowPassElem = document.getElementById("lowpass") as HTMLElement;
+    const highPassElem = document.getElementById("highpass") as HTMLElement;
+
+    let response = await fetch("/api?action=get_all");
+    let newEq = await response.json();
+
+    eq.set(newEq);
+
+    lowPassElem.setAttribute("freq", newEq.lowpass.freq);
+    lowPassElem.setAttribute("q", newEq.lowpass.q);
+    lowPassElem.setAttribute("order", newEq.lowpass.order);
+
+    highPassElem.setAttribute("freq", newEq.highpass.freq);
+    highPassElem.setAttribute("q", newEq.highpass.q);
+    highPassElem.setAttribute("order", newEq.highpass.order);
 
     const graphCanvas = document.getElementById("graph") as HTMLCanvasElement;
+
+    const data = createData(eq.value);
 
     const chart = new Chart(graphCanvas, {
       data: {
         datasets: [
           {
-            data: [],
+            data,
             label: "output 1",
             fill: "start",
             backgroundColor: "#ffffff55",
@@ -116,9 +135,14 @@ import Layout from "../layouts/default.astro";
         },
       },
     });
+    const throttleFetch = throttled(fetch, 200);
+    const throttleLog = throttled(console.log, 200);
     window.addEventListener("update", (e) => {
+      const event = e as CustomEvent<{ lul: string }>;
       chart.data.datasets[0].data = createData(eq.get());
       chart.update();
+      throttleLog(event.detail);
+      // throttleFetch()
     });
   </script>
 </Layout>

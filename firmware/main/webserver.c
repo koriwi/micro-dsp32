@@ -66,8 +66,8 @@ static esp_err_t api_handler(httpd_req_t *req) {
 
   if (strcmp(val, "get_all")) {
     cJSON *json = cJSON_CreateObject();
-    cJSON *lp = cJSON_AddObjectToObject(json, "lp");
-    cJSON *hp = cJSON_AddObjectToObject(json, "hp");
+    cJSON *lp = cJSON_AddObjectToObject(json, "lowpass");
+    cJSON *hp = cJSON_AddObjectToObject(json, "highpass");
 
     cJSON_AddNumberToObject(lp, "freq", config.lp_freq);
     cJSON_AddNumberToObject(lp, "order", config.lp_order);

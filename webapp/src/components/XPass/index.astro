@@ -1,13 +1,14 @@
 ---
 interface Props {
-  pass: "high"|"low"
+  pass: "high" | "low";
+  id: string;
 }
-const {pass} = Astro.props;
-console.log({pass})
+const { pass, id } = Astro.props;
 ---
-<x-pass data-type={pass}>
+
+<x-pass data-type={pass} id={id}>
   <div class="p-0.5 px-2 rounded-t bg-white text-black inline-block">
-    {pass === "high" ? "Highpass": "Lowpass" }
+    {pass === "high" ? "Highpass" : "Lowpass"}
   </div>
   <div
     class="grid grid-cols-[1fr_1fr_4fr] gap-4 w-full border border-solid border-white rounded-sm rounded-tl-none p-4"
@@ -54,12 +55,78 @@ console.log({pass})
   </div>
 </x-pass>
 <script>
-  import { attach } from "./script.js"
+  import {
+    rangeChangedLog,
+    valueChangedLog,
+    update,
+    valueChanged,
+    toLog,
+    fromLog,
+  } from "./script.js";
 
   class XPass extends HTMLElement {
+    static observedAttributes = ["freq", "q", "order"];
+
+    passFreq: HTMLInputElement;
+    passFreqRange: HTMLInputElement;
+    passQ: HTMLInputElement;
+    passQRange: HTMLInputElement;
+    passOrder: HTMLInputElement;
+
+    constructor() {
+      super();
+
+      this.passFreq = this.querySelector("#p-f") as HTMLInputElement;
+      this.passFreqRange = this.querySelector("#p-f-range") as HTMLInputElement;
+
+      this.passQ = this.querySelector("#p-q") as HTMLInputElement;
+      this.passQRange = this.querySelector("#p-q-range") as HTMLInputElement;
+
+      this.passOrder = this.querySelector("#p-order") as HTMLInputElement;
+    }
+
     connectedCallback() {
-      attach(this, this.dataset.type)
+      const type = this.dataset.type as "low" | "high";
+      this.passFreqRange.addEventListener("input", (e) => {
+        const value = rangeChangedLog(this.passFreq)(e);
+        update(type, "freq", parseInt(value));
+      });
+      this.passFreq.addEventListener("change", (e) => {
+        const value = valueChangedLog(this.passFreqRange)(e);
+        update(type, "freq", parseInt(value));
+      });
+
+      this.passQRange.addEventListener("input", (e) => {
+        const value = valueChanged(this.passQ)(e);
+        update(type, "q", parseFloat(value));
+      });
+      this.passQ.addEventListener("change", (e) => {
+        const value = valueChanged(this.passQRange)(e);
+        update(type, "q", parseFloat(value));
+      });
+
+      this.passOrder.addEventListener("change", (e) => {
+        update(type, "order", parseInt((e.target as HTMLInputElement).value));
+      });
+    }
+
+    attributeChangedCallback(
+      name: string,
+      oldValue: string | null,
+      newValue: string | null,
+    ) {
+      if (name == "freq" && newValue) {
+        this.passFreq.value = newValue;
+        this.passFreqRange.value = fromLog(parseInt(newValue)).toString();
+      }
+      if (name == "order" && newValue) {
+        this.passOrder.value = newValue;
+      }
+      if (name == "q" && newValue) {
+        this.passQ.value = newValue;
+        this.passQRange.value = newValue;
+      }
     }
   }
-  customElements.define("x-pass", XPass)
+  customElements.define("x-pass", XPass);
 </script>
