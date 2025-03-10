@@ -1,4 +1,5 @@
-import { eq, PassConfig } from "../../global.ts";
+import { eq } from "../../global.ts";
+import type { PassConfig } from "../../global.ts";
 
 export function attach(elem: HTMLElement, pass: "low" | "high") {
   let passFreq = elem.querySelector("#p-f") as HTMLInputElement;

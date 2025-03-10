@@ -3,6 +3,9 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   compressHTML: true,
+  server: {
+    host: "192.168.1.100",
+  },
   build: {
     output: "static",
     inlineStylesheets: "always",

@@ -1,4 +1,4 @@
-import { EQConfig } from "./global";
+import type { EQConfig } from "./global";
 
 function lowpassCoeffs(
   f0: number,
