@@ -1,0 +1,3 @@
+[submodule "firmware/main/esp-cjson"]
+	path = firmware/main/esp-cjson
+	url = git@github.com:maximkulkin/esp-cjson.git

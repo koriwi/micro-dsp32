@@ -3,6 +3,7 @@ idf_component_register(
     "micro-dsp32.c"
     "wifi.c"
     "webserver.c"
+    "config.c"
 
   EMBED_FILES
     "../../webapp/dist/gz/index.html.gz"
