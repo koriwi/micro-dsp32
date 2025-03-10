@@ -1,3 +1,5 @@
+#include "cJSON.h"
+#include "config.h"
 #include "esp_http_server.h"
 #include "esp_log.h"
 #include <stdio.h>
@@ -5,6 +7,8 @@
 
 #define SSID "ESP32_AP"
 #define PASSWORD "12345678"
+
+extern config_t config;
 
 extern const unsigned char
     index_html_start[] asm("_binary_index_html_gz_start");
@@ -51,19 +55,40 @@ static esp_err_t global_js_handler(httpd_req_t *req) {
 }
 
 static esp_err_t api_handler(httpd_req_t *req) {
-  char query_str[128];
-  httpd_req_get_url_query_str(req, query_str, 128);
-  char val[5];
-  httpd_query_key_value(query_str, "foo", val, 5);
+  size_t query_len;
+  query_len = httpd_req_get_url_query_len(req);
+
+  char *query_str = malloc(sizeof(char) * query_len);
+  httpd_req_get_url_query_str(req, query_str, query_len);
+
+  char val[10];
+  httpd_query_key_value(query_str, "action", val, 10);
+
+  if (strcmp(val, "get_all")) {
+    cJSON *json = cJSON_CreateObject();
+    cJSON *lp = cJSON_AddObjectToObject(json, "lp");
+    cJSON *hp = cJSON_AddObjectToObject(json, "hp");
+
+    cJSON_AddNumberToObject(lp, "freq", config.lp_freq);
+    cJSON_AddNumberToObject(lp, "order", config.lp_order);
+    cJSON_AddNumberToObject(lp, "q", config.lp_q / 32768.0f);
+    cJSON_AddNumberToObject(hp, "freq", config.hp_freq);
+    cJSON_AddNumberToObject(hp, "order", config.hp_order);
+    cJSON_AddNumberToObject(hp, "q", config.hp_q / 32768.0f);
+
+    char *resp_buf = cJSON_PrintUnformatted(json);
+
+    return httpd_resp_send(req, resp_buf, strlen(resp_buf));
+  }
   ESP_LOGW("API CALL", "query string %s, foo %s", query_str, val);
-  return httpd_resp_send(req, "ok", 2);
+  return httpd_resp_send(req, "unknown", 7);
 }
 
 void start_webserver() {
-  httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+  httpd_config_t httpd_config = HTTPD_DEFAULT_CONFIG();
   httpd_handle_t server = NULL;
 
-  if (httpd_start(&server, &config) == ESP_OK) {
+  if (httpd_start(&server, &httpd_config) == ESP_OK) {
     httpd_uri_t index_uri = {
         .uri = "/", .method = HTTP_GET, .handler = index_handler};
     httpd_uri_t script1_uri = {

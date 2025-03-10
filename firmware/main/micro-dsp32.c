@@ -15,10 +15,10 @@ void webserver_task(void *pvParameters) {
 
 void app_main(void) {
   nvs_flash_init();
+  load_or_init_nvs();
+
   wifi_init_softap();
-  char buf[128];
-  esp_err_t status = get_config(buf, 128);
-  ESP_LOGW("NVS--------", "%i %s", status, buf);
+
   // start webserver
   xTaskCreatePinnedToCore(webserver_task, "webserver task", 4096, NULL, 5, NULL,
                           0);

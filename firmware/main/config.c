@@ -1,4 +1,4 @@
-#include "cJSON.h"
+#include "config.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "nvs.h"
@@ -8,64 +8,78 @@
 #include <string.h>
 #include <sys/types.h>
 
-typedef union config_u {
-  struct config_s {
-    uint16_t lp_freq;
-    uint16_t lp_q;
-    uint16_t lp_order;
-    uint16_t hp_freq;
-    uint16_t hp_q;
-    uint16_t hp_order;
-  } obj;
-  uint16_t arr[6];
-} config_t;
-
 config_t config;
+/**
+ * set all members of the config struct to the default values
+ */
+void init_config_with_defaults() {
+  config.lp_freq = 430;
+  config.lp_q = (uint16_t)32768 * 0.7f;
+  config.lp_order = 0;
 
-void default_config() {
-  config.obj.lp_freq = 430;
-  config.obj.lp_q = (uint16_t)32768 * 0.7f;
-  config.obj.lp_order = 0;
-
-  config.obj.hp_freq = 430;
-  config.obj.hp_q = (uint16_t)32768 * 0.7f;
-  config.obj.hp_order = 0;
+  config.hp_freq = 430;
+  config.hp_q = (uint16_t)32768 * 0.7f;
+  config.hp_order = 0;
 }
 
-esp_err_t init_default_config(nvs_handle_t *handle) {
+/**
+ * if there is already a config in the NVS, load it
+ * if not, fill the config with defaults and write it to NVS
+ */
+esp_err_t load_or_init_nvs() {
+  nvs_handle_t handle;
   esp_err_t err;
+  err = nvs_open("eq", NVS_READONLY, &handle);
 
-  err = nvs_open("eq", NVS_READWRITE, handle);
+  if (err == ESP_OK) {
+    ESP_LOGI("NVS", "NVS config found, loading...");
+    size_t conf_size;
+    nvs_get_blob(handle, "config", NULL, &conf_size);
+
+    nvs_get_blob(handle, "config", &config, &conf_size);
+
+    nvs_close(handle);
+    return ESP_OK;
+  }
+
+  ESP_LOGI("NVS", "NVS empty, initializing...");
+
+  err = nvs_open("eq", NVS_READWRITE, &handle);
   if (err != ESP_OK)
     return err;
 
-  default_config();
-  nvs_set_blob(*handle, "config", &config, sizeof(config));
-  nvs_commit(*handle);
+  init_config_with_defaults();
+  nvs_set_blob(handle, "config", &config, sizeof(config));
+  nvs_commit(handle);
 
+  nvs_close(handle);
+
+  ESP_LOGI("NVS", "NVS now has config");
   return ESP_OK;
 }
 
-esp_err_t get_config(char *buf, size_t buf_len) {
+/**
+ * save the current config struct to the NVS
+ */
+esp_err_t save_config() {
   nvs_handle_t handle;
   esp_err_t err;
 
   // check if config has ever been initialized
-  err = nvs_open("eq", NVS_READONLY, &handle);
+  err = nvs_open("eq", NVS_READWRITE, &handle);
   if (err != ESP_OK) {
-    // no, then do it
-    err = init_default_config(&handle);
-    if (err != ESP_OK)
-      return err;
+    return err;
+  }
+  err = nvs_set_blob(handle, "config", &config, sizeof(config));
+  if (err != ESP_OK) {
+    return err;
   }
 
-  // passing null reads the size
-  size_t conf_size;
-  nvs_get_blob(handle, "config", NULL, &conf_size);
+  err = nvs_commit(handle);
+  if (err != ESP_OK) {
+    return err;
+  }
 
-  nvs_get_blob(handle, "config", &config, &conf_size);
-  snprintf(buf, buf_len, "lp_freq = %u, lp_q = %f", config.obj.lp_freq,
-           config.obj.lp_q / 32768.0f);
-
+  nvs_close(handle);
   return ESP_OK;
 }
