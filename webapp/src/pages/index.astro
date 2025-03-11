@@ -142,7 +142,11 @@ import Layout from "../layouts/default.astro";
       chart.data.datasets[0].data = createData(eq.get());
       chart.update();
       throttleLog(event.detail);
-      // throttleFetch()
+      const search = new URLSearchParams({
+        action: "set",
+        ...event.detail,
+      });
+      throttleFetch("/api?" + search.toString());
     });
   </script>
 </Layout>
