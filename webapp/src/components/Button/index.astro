@@ -1,0 +1,29 @@
+---
+interface Props {
+  text: string;
+  onclick: string;
+}
+const { text, onclick } = Astro.props;
+---
+
+<custom-button
+  data-onclick={onclick}
+  class="bg-white px-6 py-1 text-black rounded-lg cursor-pointer hover:bg-black hover:text-white border border-solid border-white transition"
+>
+  {text}
+</custom-button>
+
+<script>
+  class Button extends HTMLElement {
+    constructor() {
+      super();
+    }
+
+    connectedCallback() {
+      this.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent(this.dataset.onclick));
+      });
+    }
+  }
+  customElements.define("custom-button", Button);
+</script>
