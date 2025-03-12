@@ -76,7 +76,8 @@ import Button from "../components/Button/index.astro";
         ))
       }
     </div>
-    <div class="flex justify-end pt-4">
+    <div class="flex justify-between pt-4">
+      <Button text="Change name" onclick="change_name" />
       <Button text="Save" onclick="save" />
     </div>
   </div>
@@ -134,10 +135,17 @@ import Button from "../components/Button/index.astro";
     const data2 = createData(eq.value[1]);
 
     const chart = new Chart(graphCanvas, chartData(data1, data2));
+
     window.addEventListener("save", async (_e) => {
       console.log("saving");
       await fetch("/api?action=save");
     });
+    window.addEventListener("change_name", async (_e) => {
+      const newName = window.prompt("Please enter the name for this device");
+      console.log("new name", newName);
+      // await fetch("/api?action=save");
+    });
+
     const throttleFetch = throttled(fetch, 200);
     const throttleLog = throttled(console.log, 200);
     window.addEventListener("update", (e) => {
