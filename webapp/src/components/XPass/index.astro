@@ -2,11 +2,12 @@
 interface Props {
   pass: "high" | "low";
   id: string;
+  channel: number;
 }
-const { pass, id } = Astro.props;
+const { pass, id, channel } = Astro.props;
 ---
 
-<x-pass data-type={pass} id={id}>
+<x-pass data-type={pass} data-channel={channel} id={id}>
   <div class="p-0.5 px-2 rounded-t bg-white text-black inline-block">
     {pass === "high" ? "Highpass" : "Lowpass"}
   </div>
@@ -87,26 +88,32 @@ const { pass, id } = Astro.props;
 
     connectedCallback() {
       const type = this.dataset.type as "low" | "high";
+      const channel = parseInt(this.dataset.channel ?? "1");
       this.passFreqRange.addEventListener("input", (e) => {
         const value = rangeChangedLog(this.passFreq)(e);
-        update(type, "freq", parseInt(value));
+        update(type, channel, "freq", parseInt(value));
       });
       this.passFreq.addEventListener("change", (e) => {
         const value = valueChangedLog(this.passFreqRange)(e);
-        update(type, "freq", parseInt(value));
+        update(type, channel, "freq", parseInt(value));
       });
 
       this.passQRange.addEventListener("input", (e) => {
         const value = valueChanged(this.passQ)(e);
-        update(type, "q", parseFloat(value));
+        update(type, channel, "q", parseFloat(value));
       });
       this.passQ.addEventListener("change", (e) => {
         const value = valueChanged(this.passQRange)(e);
-        update(type, "q", parseFloat(value));
+        update(type, channel, "q", parseFloat(value));
       });
 
       this.passOrder.addEventListener("change", (e) => {
-        update(type, "order", parseInt((e.target as HTMLInputElement).value));
+        update(
+          type,
+          channel,
+          "order",
+          parseInt((e.target as HTMLInputElement).value),
+        );
       });
     }
 

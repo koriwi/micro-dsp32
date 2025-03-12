@@ -55,8 +55,8 @@ import Button from "../components/Button/index.astro";
     >
       <div id="view1" class="hidden flex-col gap-8 grow-1">
         <div class="grid grid-cols-2 gap-6">
-          <XPass id="lowpass" pass="low" />
-          <XPass id="highpass" pass="high" />
+          <XPass id="lowpass1" pass="low" channel={0} />
+          <XPass id="highpass1" pass="high" channel={0} />
         </div>
         <div class="grid grid-cols-5 gap-4">
           {
@@ -75,8 +75,8 @@ import Button from "../components/Button/index.astro";
       </div>
       <div id="view2" class="hidden flex-col gap-8 grow-1">
         <div class="grid grid-cols-2 gap-6">
-          <XPass id="lowpass" pass="low" />
-          <XPass id="highpass" pass="high" />
+          <XPass id="lowpass2" pass="low" channel={1} />
+          <XPass id="highpass2" pass="high" channel={1} />
         </div>
         <div class="grid grid-cols-5 gap-4">
           {
@@ -106,34 +106,52 @@ import Button from "../components/Button/index.astro";
     import { chartData } from "../chart.ts";
     import { throttled } from "../utils.ts";
 
-    const lowPassElem = document.getElementById("lowpass") as HTMLElement;
-    const highPassElem = document.getElementById("highpass") as HTMLElement;
-    let newEq: EQConfig;
+    const lowPassElem1 = document.getElementById("lowpass1") as HTMLElement;
+    const highPassElem1 = document.getElementById("highpass1") as HTMLElement;
+    const lowPassElem2 = document.getElementById("lowpass2") as HTMLElement;
+    const highPassElem2 = document.getElementById("highpass2") as HTMLElement;
+
+    let newEq: EQConfig[];
     try {
       let response = await fetch("/api?action=get_all");
       newEq = await response.json();
     } catch {
-      newEq = {
-        lowpass: { q: 0.7, freq: 430, order: 2 },
-        highpass: { q: 0.7, freq: 430, order: 0 },
-      };
+      newEq = [
+        {
+          lowpass: { q: 0.7, freq: 430, order: 2 },
+          highpass: { q: 0.7, freq: 430, order: 0 },
+        },
+        {
+          lowpass: { q: 0.7, freq: 430, order: 2 },
+          highpass: { q: 0.7, freq: 430, order: 0 },
+        },
+      ];
     }
 
-    eq.set([newEq, newEq]);
+    eq.set(newEq);
 
-    lowPassElem.setAttribute("freq", newEq.lowpass.freq.toString());
-    lowPassElem.setAttribute("q", newEq.lowpass.q.toString());
-    lowPassElem.setAttribute("order", newEq.lowpass.order.toString());
+    lowPassElem1.setAttribute("freq", newEq[0].lowpass.freq.toString());
+    lowPassElem1.setAttribute("q", newEq[0].lowpass.q.toString());
+    lowPassElem1.setAttribute("order", newEq[0].lowpass.order.toString());
 
-    highPassElem.setAttribute("freq", newEq.highpass.freq.toString());
-    highPassElem.setAttribute("q", newEq.highpass.q.toString());
-    highPassElem.setAttribute("order", newEq.highpass.order.toString());
+    highPassElem1.setAttribute("freq", newEq[0].highpass.freq.toString());
+    highPassElem1.setAttribute("q", newEq[0].highpass.q.toString());
+    highPassElem1.setAttribute("order", newEq[0].highpass.order.toString());
+
+    lowPassElem2.setAttribute("freq", newEq[1].lowpass.freq.toString());
+    lowPassElem2.setAttribute("q", newEq[1].lowpass.q.toString());
+    lowPassElem2.setAttribute("order", newEq[1].lowpass.order.toString());
+
+    highPassElem2.setAttribute("freq", newEq[1].highpass.freq.toString());
+    highPassElem2.setAttribute("q", newEq[1].highpass.q.toString());
+    highPassElem2.setAttribute("order", newEq[1].highpass.order.toString());
 
     const graphCanvas = document.getElementById("graph") as HTMLCanvasElement;
 
-    const data = createData(eq.value);
+    const data1 = createData(eq.value[0]);
+    const data2 = createData(eq.value[1]);
 
-    const chart = new Chart(graphCanvas, chartData(data));
+    const chart = new Chart(graphCanvas, chartData(data1, data2));
     window.addEventListener("save", async (_e) => {
       console.log("saving");
       await fetch("/api?action=save");
@@ -142,9 +160,10 @@ import Button from "../components/Button/index.astro";
     const throttleLog = throttled(console.log, 200);
     window.addEventListener("update", (e) => {
       const event = e as CustomEvent<{ lul: string }>;
-      chart.data.datasets[0].data = createData(eq.get());
+      chart.data.datasets[0].data = createData(eq.get()[0]);
+      chart.data.datasets[1].data = createData(eq.get()[1]);
       chart.update();
-      throttleLog(event.detail);
+
       const search = new URLSearchParams({
         action: "set",
         ...event.detail,

@@ -6,11 +6,12 @@ type settingVal = PassConfig[setting];
 
 export function update(
   pass: "low" | "high",
+  channel: number,
   settingKey: setting,
   settingValue: settingVal,
 ) {
   let key = pass === "low" ? "lowpass" : "highpass";
-  let parentObject = eq.value[key];
+  let parentObject = eq.value[channel][key];
   parentObject[settingKey] = settingValue;
   eq.set({
     ...eq.value,
@@ -18,7 +19,7 @@ export function update(
   });
   window.dispatchEvent(
     new CustomEvent("update", {
-      detail: { key: settingKey, value: settingValue, type: key },
+      detail: { key: settingKey, value: settingValue, type: key, channel },
     }),
   );
 }

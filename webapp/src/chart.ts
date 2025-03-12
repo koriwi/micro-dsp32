@@ -1,14 +1,21 @@
 import type { ChartConfiguration, TooltipItem } from "chart.js";
 
-export const chartData = (dataChannel1?: any) => {
+export const chartData = (dataChannel1: any, dataChannel2: any) => {
   return {
     data: {
       datasets: [
         {
-          data: dataChannel1 ?? [],
-          label: "Output 1",
+          data: dataChannel1,
+          label: "Channel 1",
           fill: "start",
-          backgroundColor: "#ffffff55",
+          backgroundColor: "#ff000055",
+          borderColor: "#ffffff",
+        },
+        {
+          data: dataChannel2,
+          label: "Channel 2",
+          fill: "start",
+          backgroundColor: "#00ff0055",
           borderColor: "#ffffff",
         },
       ],

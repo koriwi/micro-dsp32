@@ -232,7 +232,7 @@ export function createData(config: EQConfig) {
     freqGains = computeFrequencyResponse(freqGains, hpCoeffs);
   }
 
-  let blCoeffs = bellCoeffs(500, 1, -5);
+  let blCoeffs = bellCoeffs(500, 1, 0);
   freqGains = computeFrequencyResponse(freqGains, blCoeffs);
 
   return freqGains;
