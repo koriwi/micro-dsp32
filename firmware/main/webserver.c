@@ -92,30 +92,33 @@ static esp_err_t api_handler(httpd_req_t *req) {
 
     char type[10];
     httpd_query_key_value(query_str, "type", type, 10);
-
-    if (strcmp(key, "freq") == 0) {
-      if (strcmp(type, "lowpass") == 0)
-        config.lp_freq = (uint16_t)atoi(value);
-      else
-        config.hp_freq = (uint16_t)atoi(value);
-    }
-    if (strcmp(key, "q") == 0) {
-      if (strcmp(type, "lowpass") == 0)
-        config.lp_q = (uint16_t)atof(value) * 32768;
-      else
-        config.hp_q = (uint16_t)atof(value) * 32768;
-    }
-    if (strcmp(key, "order") == 0) {
-      if (strcmp(type, "lowpass") == 0)
-        config.lp_order = (uint16_t)atoi(value);
-      else
-        config.hp_order = (uint16_t)atoi(value);
-    }
-
     free(query_str);
+
+    if (strcmp(key, "freq") == 0 && strcmp(type, "lowpass") == 0) {
+      config.lp_freq = (uint16_t)atoi(value);
+    } else if (strcmp(key, "freq") == 0 && strcmp(type, "highpass") == 0) {
+      config.hp_freq = (uint16_t)atoi(value);
+    } else if (strcmp(key, "q") == 0 && strcmp(type, "lowpass") == 0) {
+      config.lp_q = (uint16_t)(atof(value) * 32768);
+    } else if (strcmp(key, "q") == 0 && strcmp(type, "highpass") == 0) {
+      config.hp_q = (uint16_t)atof(value) * 32768;
+    } else if (strcmp(key, "order") == 0 && strcmp(type, "lowpass") == 0) {
+      config.lp_order = (uint16_t)atoi(value);
+    } else if (strcmp(key, "order") == 0 && strcmp(type, "highpass") == 0) {
+      config.hp_order = (uint16_t)atoi(value);
+    } else
+      return httpd_resp_send(req, "invalid", 7);
+
     return httpd_resp_send(req, "ok", 2);
   }
+
   free(query_str);
+
+  if (strcmp(action, "save") == 0) {
+    save_config();
+    return httpd_resp_send(req, "ok", 2);
+  }
+
   return httpd_resp_send(req, "unknown", 7);
 }
 
