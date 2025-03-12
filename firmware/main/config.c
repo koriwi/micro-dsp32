@@ -8,18 +8,26 @@
 #include <string.h>
 #include <sys/types.h>
 
-config_t config;
+config_t config[2];
 /**
  * set all members of the config struct to the default values
  */
 void init_config_with_defaults() {
-  config.lp_freq = 430;
-  config.lp_q = (uint16_t)32768 * 0.7f;
-  config.lp_order = 0;
+  config[0].lp_freq = 430;
+  config[0].lp_q = (uint16_t)32768 * 0.7f;
+  config[0].lp_order = 0;
 
-  config.hp_freq = 430;
-  config.hp_q = (uint16_t)32768 * 0.7f;
-  config.hp_order = 0;
+  config[0].hp_freq = 430;
+  config[0].hp_q = (uint16_t)32768 * 0.7f;
+  config[0].hp_order = 0;
+
+  config[1].lp_freq = 430;
+  config[1].lp_q = (uint16_t)32768 * 0.7f;
+  config[1].lp_order = 0;
+
+  config[1].hp_freq = 430;
+  config[1].hp_q = (uint16_t)32768 * 0.7f;
+  config[1].hp_order = 0;
 }
 
 /**
