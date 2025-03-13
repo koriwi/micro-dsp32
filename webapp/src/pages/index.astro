@@ -155,8 +155,8 @@ const bgImage =
     }
     const graphCanvas = document.getElementById("graph") as HTMLCanvasElement;
 
-    const data1 = createData(deviceConfig.value.eq[0], 1.05);
-    const data2 = createData(deviceConfig.value.eq[1], 1.05);
+    const data1 = createData(deviceConfig.value.eq[0]);
+    const data2 = createData(deviceConfig.value.eq[1]);
 
     const chart = new Chart(graphCanvas, createChartConfig(data1, data2));
 
@@ -184,8 +184,8 @@ const bgImage =
     const throttleFetch = throttled(fetch, 200);
     window.addEventListener("update", (e) => {
       const event = e as CustomEvent<{ lul: string }>;
-      chart.data.datasets[0].data = createData(deviceConfig.get().eq[0], 1.05);
-      chart.data.datasets[1].data = createData(deviceConfig.get().eq[1], 1.05);
+      chart.data.datasets[0].data = createData(deviceConfig.get().eq[0]);
+      chart.data.datasets[1].data = createData(deviceConfig.get().eq[1]);
       chart.update();
 
       const search = new URLSearchParams({

@@ -208,9 +208,17 @@ function computeFrequencyResponse(
   return newFreqGains;
 }
 
-export function createData(config: EQConfig, step = 1.2) {
+export function createData(config: EQConfig, step = 1.05) {
+  const start = 10;
+  const lowEnd = 40;
+  const end = 20000;
   let freqGains: Array<[number, number]> = [];
-  for (let f = 10; f <= 20000; f *= step) {
+
+  for (let f = start; f <= lowEnd; f++) {
+    freqGains.push([f, 0]);
+  }
+
+  for (let f = lowEnd + 1; f <= end; f *= step) {
     freqGains.push([Math.round(f), 0]);
   }
 
