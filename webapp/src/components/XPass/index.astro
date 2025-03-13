@@ -126,7 +126,7 @@ const { pass, id, channel } = Astro.props;
 
     attributeChangedCallback(
       name: string,
-      oldValue: string | null,
+      _oldValue: string | null,
       newValue: string | null,
     ) {
       if (name == "freq" && newValue) {
