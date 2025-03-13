@@ -94,12 +94,8 @@ const bgImage =
   <script>
     import Chart from "chart.js/auto";
     import { createData } from "../dsp.ts";
-    import {
-      deviceConfig,
-      type EQConfig,
-      type DeviceConfig,
-    } from "../global.ts";
-    import { chartData } from "../chart.ts";
+    import { deviceConfig, type DeviceConfig } from "../global";
+    import { createChartConfig } from "../chart";
     import { throttled } from "../utils.ts";
 
     const lowpassElems = [
@@ -159,10 +155,10 @@ const bgImage =
     }
     const graphCanvas = document.getElementById("graph") as HTMLCanvasElement;
 
-    const data1 = createData(deviceConfig.value.eq[0]);
-    const data2 = createData(deviceConfig.value.eq[1]);
+    const data1 = createData(deviceConfig.value.eq[0], 1.05);
+    const data2 = createData(deviceConfig.value.eq[1], 1.05);
 
-    const chart = new Chart(graphCanvas, chartData(data1, data2));
+    const chart = new Chart(graphCanvas, createChartConfig(data1, data2));
 
     window.addEventListener("save", async (_e) => {
       console.log("saving");
@@ -186,11 +182,10 @@ const bgImage =
     });
 
     const throttleFetch = throttled(fetch, 200);
-    const throttleLog = throttled(console.log, 200);
     window.addEventListener("update", (e) => {
       const event = e as CustomEvent<{ lul: string }>;
-      chart.data.datasets[0].data = createData(deviceConfig.get().eq[0]);
-      chart.data.datasets[1].data = createData(deviceConfig.get().eq[1]);
+      chart.data.datasets[0].data = createData(deviceConfig.get().eq[0], 1.05);
+      chart.data.datasets[1].data = createData(deviceConfig.get().eq[1], 1.05);
       chart.update();
 
       const search = new URLSearchParams({

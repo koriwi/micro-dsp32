@@ -1,6 +1,6 @@
 import type { ChartConfiguration, TooltipItem } from "chart.js";
 
-export const chartData = (dataChannel1: any, dataChannel2: any) => {
+export const createChartConfig = (dataChannel1: any, dataChannel2: any) => {
   return {
     data: {
       datasets: [
@@ -11,6 +11,8 @@ export const chartData = (dataChannel1: any, dataChannel2: any) => {
           tension: 0.33,
           backgroundColor: "#ff000055",
           borderColor: "#ffffff",
+          pointRadius: 2,
+          pointHitRadius: 10,
         },
         {
           data: dataChannel2,
@@ -19,6 +21,8 @@ export const chartData = (dataChannel1: any, dataChannel2: any) => {
           tension: 0.33,
           backgroundColor: "#00ff0055",
           borderColor: "#ffffff",
+          pointRadius: 2,
+          pointHitRadius: 10,
         },
       ],
     },
