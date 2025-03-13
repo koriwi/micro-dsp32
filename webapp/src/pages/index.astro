@@ -45,6 +45,7 @@ const bgImage =
     <input type="radio" name="channel" value="1" id="ch1" class="hidden" />
     <div class="flex items-end justify-between">
       <h1
+        id="name"
         class="text-2xl p-1 px-4 border border-solid border-white bg-white text-black rounded-t inline-block text-center"
       >
         Equalizer
@@ -93,54 +94,73 @@ const bgImage =
   <script>
     import Chart from "chart.js/auto";
     import { createData } from "../dsp.ts";
-    import { eq, type EQConfig } from "../global.ts";
+    import {
+      deviceConfig,
+      type EQConfig,
+      type DeviceConfig,
+    } from "../global.ts";
     import { chartData } from "../chart.ts";
     import { throttled } from "../utils.ts";
 
-    const lowPassElem0 = document.getElementById("lowpass0") as HTMLElement;
-    const highPassElem0 = document.getElementById("highpass0") as HTMLElement;
-    const lowPassElem1 = document.getElementById("lowpass1") as HTMLElement;
-    const highPassElem1 = document.getElementById("highpass1") as HTMLElement;
+    const lowpassElems = [
+      document.getElementById("lowpass0") as HTMLElement,
+      document.getElementById("lowpass1") as HTMLElement,
+    ];
+    const highpassElems = [
+      document.getElementById("highpass0") as HTMLElement,
+      document.getElementById("highpass1") as HTMLElement,
+    ];
 
-    let newEq: EQConfig[];
+    const title = document.getElementById("name") as HTMLHeadingElement;
+
+    let newConfig: DeviceConfig;
     try {
       let response = await fetch("/api?action=get_all");
-      newEq = await response.json();
+      newConfig = await response.json();
     } catch {
-      newEq = [
-        {
-          lowpass: { q: 0.7, freq: 430, order: 2 },
-          highpass: { q: 0.7, freq: 430, order: 0 },
-        },
-        {
-          lowpass: { q: 0.7, freq: 430, order: 0 },
-          highpass: { q: 0.7, freq: 430, order: 2 },
-        },
-      ];
+      newConfig = {
+        name: "dev-mode",
+        eq: [
+          {
+            lowpass: { q: 0.7, freq: 430, order: 2 },
+            highpass: { q: 0.7, freq: 430, order: 0 },
+          },
+          {
+            lowpass: { q: 0.7, freq: 430, order: 0 },
+            highpass: { q: 0.7, freq: 430, order: 2 },
+          },
+        ],
+      };
     }
+    deviceConfig.set(newConfig);
+    title.innerText = newConfig.name;
 
-    eq.set(newEq);
+    for (let i = 0; i < 2; i++) {
+      lowpassElems[i].setAttribute(
+        "freq",
+        newConfig.eq[i].lowpass.freq.toString(),
+      );
+      highpassElems[i].setAttribute(
+        "freq",
+        newConfig.eq[i].highpass.freq.toString(),
+      );
 
-    lowPassElem0.setAttribute("freq", newEq[0].lowpass.freq.toString());
-    lowPassElem0.setAttribute("q", newEq[0].lowpass.q.toString());
-    lowPassElem0.setAttribute("order", newEq[0].lowpass.order.toString());
+      lowpassElems[i].setAttribute(
+        "order",
+        newConfig.eq[i].lowpass.order.toString(),
+      );
+      highpassElems[i].setAttribute(
+        "order",
+        newConfig.eq[i].highpass.order.toString(),
+      );
 
-    highPassElem0.setAttribute("freq", newEq[0].highpass.freq.toString());
-    highPassElem0.setAttribute("q", newEq[0].highpass.q.toString());
-    highPassElem0.setAttribute("order", newEq[0].highpass.order.toString());
-
-    lowPassElem1.setAttribute("freq", newEq[1].lowpass.freq.toString());
-    lowPassElem1.setAttribute("q", newEq[1].lowpass.q.toString());
-    lowPassElem1.setAttribute("order", newEq[1].lowpass.order.toString());
-
-    highPassElem1.setAttribute("freq", newEq[1].highpass.freq.toString());
-    highPassElem1.setAttribute("q", newEq[1].highpass.q.toString());
-    highPassElem1.setAttribute("order", newEq[1].highpass.order.toString());
-
+      lowpassElems[i].setAttribute("q", newConfig.eq[i].lowpass.q.toString());
+      highpassElems[i].setAttribute("q", newConfig.eq[i].highpass.q.toString());
+    }
     const graphCanvas = document.getElementById("graph") as HTMLCanvasElement;
 
-    const data1 = createData(eq.value[0]);
-    const data2 = createData(eq.value[1]);
+    const data1 = createData(deviceConfig.value.eq[0]);
+    const data2 = createData(deviceConfig.value.eq[1]);
 
     const chart = new Chart(graphCanvas, chartData(data1, data2));
 
@@ -169,8 +189,8 @@ const bgImage =
     const throttleLog = throttled(console.log, 200);
     window.addEventListener("update", (e) => {
       const event = e as CustomEvent<{ lul: string }>;
-      chart.data.datasets[0].data = createData(eq.get()[0]);
-      chart.data.datasets[1].data = createData(eq.get()[1]);
+      chart.data.datasets[0].data = createData(deviceConfig.get().eq[0]);
+      chart.data.datasets[1].data = createData(deviceConfig.get().eq[1]);
       chart.update();
 
       const search = new URLSearchParams({

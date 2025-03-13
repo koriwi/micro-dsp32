@@ -68,7 +68,13 @@ static esp_err_t api_handler(httpd_req_t *req) {
   httpd_query_key_value(query_str, "action", action, 16);
 
   if (strcmp(action, "get_all") == 0) {
-    cJSON *json = cJSON_CreateArray();
+    cJSON *config_json = cJSON_CreateObject();
+
+    char name[20];
+    get_name(name, 20);
+    cJSON_AddStringToObject(config_json, "name", name);
+
+    cJSON *eq = cJSON_AddArrayToObject(config_json, "eq");
 
     for (int i = 0; i < 2; i++) {
       cJSON *channel = cJSON_CreateObject();
@@ -81,11 +87,11 @@ static esp_err_t api_handler(httpd_req_t *req) {
       cJSON_AddNumberToObject(hp, "freq", config[i].hp_freq);
       cJSON_AddNumberToObject(hp, "order", config[i].hp_order);
       cJSON_AddNumberToObject(hp, "q", config[i].hp_q / 32768.0f);
-      cJSON_AddItemToArray(json, channel);
+      cJSON_AddItemToArray(eq, channel);
     }
 
-    char *resp_buf = cJSON_PrintUnformatted(json);
-    cJSON_Delete(json);
+    char *resp_buf = cJSON_PrintUnformatted(config_json);
+    cJSON_Delete(config_json);
     free(query_str);
     return httpd_resp_send(req, resp_buf, strlen(resp_buf));
   }

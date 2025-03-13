@@ -1,4 +1,4 @@
-import { eq } from "../../global.ts";
+import { deviceConfig } from "../../global.ts";
 import type { PassConfig } from "../../global.ts";
 
 type setting = keyof PassConfig;
@@ -11,12 +11,17 @@ export function update(
   settingValue: settingVal,
 ) {
   let key = pass === "low" ? "lowpass" : "highpass";
-  let parentObject = eq.value[channel][key];
+  let parentObject = deviceConfig.value.eq[channel][key];
+
+  if (!parentObject) return;
+
   parentObject[settingKey] = settingValue;
-  eq.set({
-    ...eq.value,
+
+  deviceConfig.set({
+    ...deviceConfig.value,
     [key]: parentObject,
   });
+
   window.dispatchEvent(
     new CustomEvent("update", {
       detail: { key: settingKey, value: settingValue, type: key, channel },

@@ -48,7 +48,6 @@ void wifi_init_softap(void) {
 
   char name[20];
   get_name(name, 20);
-  ESP_LOGE("------------", "%s %i", name, (int)strlen(name));
 
   wifi_config_t wifi_config = {
       .ap = {.ssid = "",
