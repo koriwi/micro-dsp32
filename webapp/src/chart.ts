@@ -26,6 +26,7 @@ export const chartData = (dataChannel1: any, dataChannel2: any) => {
         duration: 250,
       },
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           labels: {
