@@ -104,7 +104,7 @@ const { pass, id, channel } = Astro.props;
       });
       this.passQ.addEventListener("change", (e) => {
         const value = valueChanged(this.passQRange)(e);
-        update(type, channel, "q", parseFloat(value));
+        update(type, channel, "q", Math.round(parseFloat(value) * 100) / 100);
       });
 
       this.passOrder.addEventListener("change", (e) => {
@@ -144,7 +144,9 @@ const { pass, id, channel } = Astro.props;
         }
       }
       if (name == "q" && newValue) {
-        this.passQ.value = newValue;
+        this.passQ.value = (
+          Math.round(parseFloat(newValue) * 100) / 100
+        ).toString();
         this.passQRange.value = newValue;
       }
     }
