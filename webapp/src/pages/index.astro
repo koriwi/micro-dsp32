@@ -150,8 +150,19 @@ const bgImage =
     });
     window.addEventListener("change_name", async (_e) => {
       const newName = window.prompt("Please enter the name for this device");
-      console.log("new name", newName);
-      // await fetch("/api?action=save");
+      if (!newName) return;
+      const search = new URLSearchParams({
+        action: "change_name",
+        name: newName,
+      });
+      const resp = fetch("/api?" + search.toString());
+      window.alert(
+        "Name changed to micro-dsp32-" +
+          newName +
+          ". Please don't forget to connect to the new wifi",
+      );
+      await resp;
+      window.alert("Name change succesfull");
     });
 
     const throttleFetch = throttled(fetch, 200);
