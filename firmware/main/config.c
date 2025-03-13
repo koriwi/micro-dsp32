@@ -91,3 +91,46 @@ esp_err_t save_config() {
   nvs_close(handle);
   return ESP_OK;
 }
+
+/**
+ * save the device name for wifi ssid usage
+ */
+
+esp_err_t save_name(char *name) {
+  nvs_handle_t handle;
+  ESP_ERROR_CHECK(nvs_open("settings", NVS_READWRITE, &handle));
+
+  ESP_ERROR_CHECK(nvs_set_str(handle, "name", name));
+
+  ESP_ERROR_CHECK(nvs_commit(handle));
+  nvs_close(handle);
+  return ESP_OK;
+}
+
+/**
+ * save the device name for wifi ssid usage
+ */
+
+esp_err_t get_name(char *name, size_t len) {
+  nvs_handle_t handle;
+  esp_err_t err;
+  err = nvs_open("settings", NVS_READWRITE, &handle);
+
+  size_t saved_len;
+  char saved_name[20];
+  err = nvs_get_str(handle, "name", NULL, &saved_len);
+  if (err == ESP_ERR_NVS_NOT_FOUND) {
+    ESP_ERROR_CHECK(nvs_set_str(handle, "name", ""));
+    ESP_ERROR_CHECK(nvs_commit(handle));
+    ESP_ERROR_CHECK(nvs_get_str(handle, "name", NULL, &saved_len));
+  }
+  ESP_ERROR_CHECK(nvs_get_str(handle, "name", saved_name, &saved_len));
+
+  if (len < saved_len)
+    saved_len = len;
+
+  snprintf(name, saved_len, "%s", saved_name);
+
+  nvs_close(handle);
+  return ESP_OK;
+}

@@ -1,9 +1,12 @@
 #include "cJSON.h"
 #include "config.h"
+#include "esp_err.h"
 #include "esp_http_server.h"
+#include "wifi.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #define SSID "ESP32_AP"
 #define PASSWORD "12345678"
@@ -61,8 +64,8 @@ static esp_err_t api_handler(httpd_req_t *req) {
   char *query_str = malloc(query_len);
   httpd_req_get_url_query_str(req, query_str, query_len);
 
-  char action[10];
-  httpd_query_key_value(query_str, "action", action, 10);
+  char action[16];
+  httpd_query_key_value(query_str, "action", action, 16);
 
   if (strcmp(action, "get_all") == 0) {
     cJSON *json = cJSON_CreateArray();
@@ -121,6 +124,16 @@ static esp_err_t api_handler(httpd_req_t *req) {
       return httpd_resp_send(req, "invalid key type combination", 28);
 
     return httpd_resp_send(req, "ok", 2);
+  }
+
+  if (strcmp(action, "change_name") == 0) {
+    char name[20];
+    httpd_query_key_value(query_str, "name", name, 20);
+    save_name(name);
+    esp_err_t err = httpd_resp_send(req, "ok", 2);
+    sleep(5);
+    change_softap_ssid(name);
+    return err;
   }
 
   free(query_str);
