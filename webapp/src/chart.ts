@@ -33,6 +33,7 @@ export const createChartConfig = (dataChannel1: any, dataChannel2: any) => {
       },
       responsive: true,
       maintainAspectRatio: false,
+      aspectRatio: 1, //for mobile
       plugins: {
         legend: {
           labels: {

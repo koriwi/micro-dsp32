@@ -16,7 +16,7 @@ const { pass, id, channel } = Astro.props;
   >
     <label class="flex gap-2"> Freq (Hz):</label>
     <input
-      class="border border-solid border-white text-right w-16 font-mono"
+      class="border border-solid border-white text-center md:text-right w-16 font-mono"
       type="number"
       id="p-f"
     />
@@ -30,7 +30,7 @@ const { pass, id, channel } = Astro.props;
     />
     <label class="flex flex-grow-1 gap-2"> Q-Factor:</label>
     <input
-      class="border border-solid border-white text-right w-16 font-mono disabled:text-gray-500"
+      class="border border-solid border-white text-center md:text-right w-16 font-mono disabled:text-gray-500"
       type="number"
       id="p-q"
       step="0.01"

@@ -28,10 +28,10 @@ const bgImage =
 </style>
 <Layout>
   <div
-    class="bg-contain bg-no-repeat bg-center min-h-0 relative size-full"
+    class="bg-contain bg-no-repeat bg-center md:min-h-0 relative w-full h-1/2 md:h-full"
     style={`background-image: url(${bgImage})`}
   >
-    <canvas class="min-h-0 w-full" id="graph"></canvas>
+    <canvas class="md:min-h-0 w-full" id="graph"></canvas>
   </div>
   <div class="m-4">
     <input
@@ -64,8 +64,8 @@ const bgImage =
     >
       {
         new Array(2).fill(0).map((_, i) => (
-          <div id={"view" + i} class="hidden flex-col gap-8 grow-1">
-            <div class="grid grid-cols-2 gap-6">
+          <div id={"view" + i} class="hidden flex-col gap-4 md:gap-8 grow-1">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <XPass id={"lowpass" + i} pass="low" channel={i} />
               <XPass id={"highpass" + i} pass="high" channel={i} />
             </div>
