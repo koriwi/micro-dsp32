@@ -1,0 +1,72 @@
+---
+import Button from "../Button/index.astro";
+interface Props {
+  title: string;
+  negativeText: string;
+  positiveText: string;
+}
+
+const { title, negativeText, positiveText } = Astro.props;
+---
+
+<custom-modal
+  class="fixed inset-0 backdrop-blur-xs z-30 justify-center items-center hidden"
+  data-title={title.toLowerCase()}
+>
+  <div class="min-w-96 flex flex-col">
+    <div
+      class="bg-black text-white border border-white border-solid border-b-0 p-1 pl-2 flex justify-between items-center"
+    >
+      <div class="font-bold text-lg">{title}</div>
+      <Button onclick={`modal-${title.toLowerCase()}-close`} text={"X"} />
+    </div>
+    <div
+      class="flex flex-col gap-4 border border-solid border-white bg-black p-1 pl-2"
+    >
+      <slot />
+      <div class="flex justify-end gap-1">
+        <button
+          class="px-2 py-0.5 rounded-lg cursor-pointer hover:ring-1 bg-green-500"
+          >{positiveText}</button
+        >
+      </div>
+    </div>
+  </div>
+</custom-modal>
+
+<script>
+  class Modal extends HTMLElement {
+    constructor() {
+      super();
+    }
+    private hide() {
+      this.classList.add("hidden");
+      this.classList.remove("flex");
+    }
+    private show() {
+      this.classList.add("flex");
+      this.classList.remove("hidden");
+    }
+    connectedCallback() {
+      const title = this.dataset.title;
+      if (!title) return;
+      window.addEventListener(`modal-${title}-open`, (_e) => {
+        this.show();
+      });
+      window.addEventListener(`modal-${title}-close`, (_e) => {
+        this.hide();
+      });
+      this.addEventListener("click", (e) => {
+        if (e.target == this) {
+          this.hide();
+        }
+      });
+      window.addEventListener("keydown", (e) => {
+        if (e.key == "Escape") {
+          this.hide();
+        }
+      });
+    }
+  }
+  customElements.define("custom-modal", Modal);
+</script>

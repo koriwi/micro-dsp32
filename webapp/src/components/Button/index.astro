@@ -21,7 +21,8 @@ const { text, onclick } = Astro.props;
 
     connectedCallback() {
       this.addEventListener("click", () => {
-        window.dispatchEvent(new CustomEvent(this.dataset.onclick));
+        this.dataset.onclick &&
+          window.dispatchEvent(new CustomEvent(this.dataset.onclick));
       });
     }
   }
