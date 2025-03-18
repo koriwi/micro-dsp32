@@ -1,0 +1,34 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends Omit<HTMLAttributes<"div">, "onclick"> {
+  text: string;
+  onclick?: string;
+}
+const { text, onclick, ...rest } = Astro.props;
+---
+
+<custom-button
+  {...rest}
+  data-onclick={onclick}
+  class="bg-white px-6 py-1 text-black rounded-lg cursor-pointer hover:bg-black hover:text-white border border-solid border-white transition"
+>
+  {text}
+</custom-button>
+
+<script>
+  class Button extends HTMLElement {
+    constructor() {
+      super();
+    }
+
+    connectedCallback() {
+      this.addEventListener("click", (e) => {
+        const onClick = this.dataset.onclick?.trim();
+        if (!!onClick) window.dispatchEvent(new CustomEvent(onClick));
+        else this.closest("form")?.submit();
+      });
+    }
+  }
+  customElements.define("custom-button", Button);
+</script>

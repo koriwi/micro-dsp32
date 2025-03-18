@@ -1,20 +1,19 @@
 ---
 interface Props {
-  text: string;
   onclick: string;
 }
-const { text, onclick } = Astro.props;
+const { onclick } = Astro.props;
 ---
 
-<custom-button
+<custom-iconbutton
   data-onclick={onclick}
-  class="bg-white px-6 py-1 text-black rounded-lg cursor-pointer hover:bg-black hover:text-white border border-solid border-white transition"
+  class="cursor-pointer text-red-400 hover:saturate-200 transition"
 >
-  {text}
-</custom-button>
+  <slot />
+</custom-iconbutton>
 
 <script>
-  class Button extends HTMLElement {
+  class IconButton extends HTMLElement {
     constructor() {
       super();
     }
@@ -26,5 +25,5 @@ const { text, onclick } = Astro.props;
       });
     }
   }
-  customElements.define("custom-button", Button);
+  customElements.define("custom-iconbutton", IconButton);
 </script>

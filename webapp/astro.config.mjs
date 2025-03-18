@@ -1,8 +1,11 @@
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 
+import icon from "astro-icon";
+
 export default defineConfig({
   compressHTML: true,
+
   // server: {
   //   host: "192.168.1.100",
   // },
@@ -10,6 +13,7 @@ export default defineConfig({
     output: "static",
     inlineStylesheets: "always",
   },
+
   vite: {
     plugins: [tailwindcss()],
     build: {
@@ -22,4 +26,6 @@ export default defineConfig({
       },
     },
   },
+
+  integrations: [icon()],
 });

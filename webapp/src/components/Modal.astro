@@ -1,12 +1,11 @@
 ---
-import Button from "../Button/index.astro";
+import IconButton from "./IconButton.astro";
+import { Icon } from "astro-icon/components";
 interface Props {
   title: string;
-  negativeText: string;
-  positiveText: string;
 }
 
-const { title, negativeText, positiveText } = Astro.props;
+const { title } = Astro.props;
 ---
 
 <custom-modal
@@ -18,18 +17,14 @@ const { title, negativeText, positiveText } = Astro.props;
       class="bg-black text-white border border-white border-solid border-b-0 p-1 pl-2 flex justify-between items-center"
     >
       <div class="font-bold text-lg">{title}</div>
-      <Button onclick={`modal-${title.toLowerCase()}-close`} text={"X"} />
+      <IconButton onclick={`modal-${title.toLowerCase()}-close`}>
+        <Icon size="36" name="fluent:dismiss-square-24-filled" />
+      </IconButton>
     </div>
     <div
       class="flex flex-col gap-4 border border-solid border-white bg-black p-1 pl-2"
     >
       <slot />
-      <div class="flex justify-end gap-1">
-        <button
-          class="px-2 py-0.5 rounded-lg cursor-pointer hover:ring-1 bg-green-500"
-          >{positiveText}</button
-        >
-      </div>
     </div>
   </div>
 </custom-modal>
@@ -50,6 +45,7 @@ const { title, negativeText, positiveText } = Astro.props;
     connectedCallback() {
       const title = this.dataset.title;
       if (!title) return;
+
       window.addEventListener(`modal-${title}-open`, (_e) => {
         this.show();
       });
