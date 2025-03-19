@@ -66,7 +66,7 @@ const { pass, id, channel } = Astro.props;
   } from "./script.js";
 
   class XPass extends HTMLElement {
-    static observedAttributes = ["freq", "q", "order"];
+    static observedAttributes = ["config"];
 
     passFreq: HTMLInputElement;
     passFreqRange: HTMLInputElement;
@@ -129,13 +129,16 @@ const { pass, id, channel } = Astro.props;
       _oldValue: string | null,
       newValue: string | null,
     ) {
-      if (name == "freq" && newValue) {
-        this.passFreq.value = newValue;
-        this.passFreqRange.value = fromLog(parseInt(newValue)).toString();
+      if (name !== "config") return;
+      const config = JSON.parse(newValue ?? "{}");
+      console.log(config);
+      if (config.freq) {
+        this.passFreq.value = config.freq;
+        this.passFreqRange.value = fromLog(parseInt(config.freq)).toString();
       }
-      if (name == "order" && newValue) {
-        this.passOrder.value = newValue;
-        if (newValue == "2") {
+      if (config.order) {
+        this.passOrder.value = config.order;
+        if (config.order == "2") {
           this.passQ.disabled = false;
           this.passQRange.disabled = false;
         } else {
@@ -143,11 +146,11 @@ const { pass, id, channel } = Astro.props;
           this.passQRange.disabled = true;
         }
       }
-      if (name == "q" && newValue) {
+      if (config.q) {
         this.passQ.value = (
-          Math.round(parseFloat(newValue) * 100) / 100
+          Math.round(parseFloat(config.q) * 100) / 100
         ).toString();
-        this.passQRange.value = newValue;
+        this.passQRange.value = config.q;
       }
     }
   }

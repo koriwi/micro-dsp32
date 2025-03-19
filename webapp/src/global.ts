@@ -11,11 +11,13 @@ export interface EQConfig {
   [pass: string]: PassConfig | undefined;
 }
 export interface DeviceConfig {
-  name: string;
+  settings: {
+    name: string;
+  };
   eq: EQConfig[];
 }
 export const deviceConfig = atom<DeviceConfig>({
-  name: "",
+  settings: { name: "" },
   eq: [
     {
       lowpass: {

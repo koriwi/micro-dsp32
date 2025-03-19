@@ -29,7 +29,7 @@ const bgImage =
   }
 </style>
 <Layout>
-  <SettingsModal />
+  <SettingsModal id="settings-modal" />
   <div
     class="bg-contain bg-no-repeat bg-center md:min-h-0 relative w-full h-1/2 md:h-full"
     style={`background-image: url(${bgImage})`}
@@ -112,6 +112,7 @@ const bgImage =
     ];
 
     const title = document.getElementById("name") as HTMLHeadingElement;
+    const settings = document.getElementById("settings-modal");
 
     let newConfig: DeviceConfig;
     try {
@@ -119,7 +120,9 @@ const bgImage =
       newConfig = await response.json();
     } catch {
       newConfig = {
-        name: "dev-mode",
+        settings: {
+          name: "dev-mode",
+        },
         eq: [
           {
             lowpass: { q: 0.7, freq: 430, order: 2 },
@@ -134,28 +137,17 @@ const bgImage =
     }
     deviceConfig.set(newConfig);
     title.innerText = newConfig.name;
+    settings?.setAttribute("settings", JSON.stringify(newConfig.settings));
 
     for (let i = 0; i < 2; i++) {
       lowpassElems[i].setAttribute(
-        "freq",
-        newConfig.eq[i].lowpass.freq.toString(),
+        "config",
+        JSON.stringify(newConfig.eq[i].lowpass),
       );
       highpassElems[i].setAttribute(
-        "freq",
-        newConfig.eq[i].highpass.freq.toString(),
+        "config",
+        JSON.stringify(newConfig.eq[i].highpass),
       );
-
-      lowpassElems[i].setAttribute(
-        "order",
-        newConfig.eq[i].lowpass.order.toString(),
-      );
-      highpassElems[i].setAttribute(
-        "order",
-        newConfig.eq[i].highpass.order.toString(),
-      );
-
-      lowpassElems[i].setAttribute("q", newConfig.eq[i].lowpass.q.toString());
-      highpassElems[i].setAttribute("q", newConfig.eq[i].highpass.q.toString());
     }
     const graphCanvas = document.getElementById("graph") as HTMLCanvasElement;
 

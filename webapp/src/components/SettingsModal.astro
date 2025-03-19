@@ -1,12 +1,127 @@
 ---
 import Button from "./Button.astro";
 import Modal from "./Modal.astro";
+import LabelTextInput from "./LabelTextInput.astro";
+import type { HTMLAttributes } from "astro/types";
+interface Props extends HTMLAttributes<"div"> {}
 ---
 
-<Modal title="Settings">
-  <form action="/api">
-    <input type="hidden" name="action" value="set_settings" />
-    <Button onclick="modal-settings-close" text="Cancel" />
-    <Button text="Save" />
-  </form>
-</Modal>
+<style>
+  @import "tailwindcss";
+  #st-name:checked ~ * {
+    & #name-view {
+      display: flex !important;
+    }
+    & [for="st-name"] {
+      @apply bg-white text-black;
+    }
+  }
+  #st-pins:checked ~ * {
+    & #pins-view {
+      display: flex !important;
+    }
+    & [for="st-pins"] {
+      @apply bg-white text-black;
+    }
+  }
+</style>
+<settings-modal {...Astro.props}>
+  <Modal title="Settings">
+    <div class="size-full">
+      <input
+        class="hidden"
+        type="radio"
+        name="settings-tab"
+        value="name"
+        id="st-name"
+        checked
+      />
+      <input
+        class="hidden"
+        type="radio"
+        name="settings-tab"
+        value="pins"
+        id="st-pins"
+      />
+      <div class="flex">
+        <div class="flex gap-0.5 bg-white border border-solid border-white">
+          <label class="px-4 py-1 h-full bg-black transition" for="st-name"
+            >Name</label
+          >
+          <label class="px-4 py-1 h-full bg-black transition" for="st-pins"
+            >Pins</label
+          >
+        </div>
+      </div>
+      <div class="border border-solid border-white p-2">
+        <form id="name-view" action="/api" class="hidden flex-col gap-4">
+          <input type="hidden" name="action" value="change_name" />
+          <LabelTextInput name="name" value="lul" label="Name (in wifi)" />
+          <div class="flex gap-2 justify-end">
+            <Button onclick="modal-settings-close" text="Cancel" />
+            <Button text="Save" />
+          </div>
+        </form>
+        <form id="pins-view" action="/api" class="hidden">
+          <input type="hidden" name="action" value="change_pins" />
+          laalalalaal2
+          <Button onclick="modal-settings-close" text="Cancel" />
+          <Button text="Save" />
+        </form>
+      </div>
+    </div>
+  </Modal>
+</settings-modal>
+<script>
+  class SettingsModal extends HTMLElement {
+    static observedAttributes = ["settings"];
+
+    nameInput: HTMLInputElement;
+
+    constructor() {
+      super();
+      this.nameInput = this.querySelector("#name")!;
+    }
+    private hide() {
+      this.classList.add("hidden");
+      this.classList.remove("flex");
+    }
+    private show() {
+      this.classList.add("flex");
+      this.classList.remove("hidden");
+    }
+    connectedCallback() {
+      const title = this.dataset.title;
+      if (!title) return;
+
+      window.addEventListener(`modal-${title}-open`, (_e) => {
+        this.show();
+      });
+      window.addEventListener(`modal-${title}-close`, (_e) => {
+        this.hide();
+      });
+      this.addEventListener("click", (e) => {
+        if (e.target == this) {
+          this.hide();
+        }
+      });
+      window.addEventListener("keydown", (e) => {
+        if (e.key == "Escape") {
+          this.hide();
+        }
+      });
+    }
+
+    attributeChangedCallback(
+      name: string,
+      _oldValue: string | null,
+      newValue: string | null,
+    ) {
+      if (name !== "settings") return;
+      const config = JSON.parse(newValue || "{}");
+
+      if (config.name) this.nameInput.value = config.name;
+    }
+  }
+  customElements.define("settings-modal", SettingsModal);
+</script>
