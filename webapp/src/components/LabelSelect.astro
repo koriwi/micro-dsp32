@@ -1,0 +1,24 @@
+---
+import { type HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"select"> {
+  label: string;
+  name: string;
+  id?: string;
+}
+const { label, name, value, id, ...rest } = Astro.props;
+---
+
+<div class="grid grid-cols-2 gap-4 py-2">
+  <label for={name}>{label}</label>
+  <select
+    id={id}
+    value={value}
+    name={name}
+    id={name}
+    class="border border-solid border-white px-1 *:bg-black invalid:ring-2 ring-offset-transparent ring-offset-1 ring-red-500"
+    {...rest}
+  >
+    <slot />
+  </select>
+</div>

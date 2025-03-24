@@ -2,6 +2,8 @@
 #include "config.h"
 #include "esp_err.h"
 #include "esp_http_server.h"
+#include "esp_log.h"
+#include "esp_system.h"
 #include "wifi.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -11,7 +13,7 @@
 #define SSID "ESP32_AP"
 #define PASSWORD "12345678"
 
-extern config_t config[2];
+extern cJSON *config;
 
 extern const unsigned char
     index_html_start[] asm("_binary_index_html_gz_start");
@@ -57,6 +59,31 @@ static esp_err_t global_js_handler(httpd_req_t *req) {
                    "application/javascript");
 }
 
+char *eq_keys[] = {"freq", "order", "q"};
+bool is_eq_key(char *find) {
+  int len = sizeof(eq_keys) / sizeof(eq_keys[0]);
+  int i;
+
+  for (i = 0; i < len; ++i) {
+    if (!strcmp(eq_keys[i], find)) {
+      return true;
+    }
+  }
+  return false;
+}
+char *setting_keys[] = {"name"};
+bool is_setting_key(char *find) {
+  int len = sizeof(setting_keys) / sizeof(setting_keys[0]);
+  int i;
+
+  for (i = 0; i < len; ++i) {
+    if (!strcmp(setting_keys[i], find)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 static esp_err_t api_handler(httpd_req_t *req) {
   size_t query_len;
   query_len = httpd_req_get_url_query_len(req) + 1;
@@ -68,30 +95,7 @@ static esp_err_t api_handler(httpd_req_t *req) {
   httpd_query_key_value(query_str, "action", action, 16);
 
   if (strcmp(action, "get_all") == 0) {
-    cJSON *config_json = cJSON_CreateObject();
-
-    char name[20];
-    get_name(name, 20);
-    cJSON_AddStringToObject(config_json, "name", name);
-
-    cJSON *eq = cJSON_AddArrayToObject(config_json, "eq");
-
-    for (int i = 0; i < 2; i++) {
-      cJSON *channel = cJSON_CreateObject();
-      cJSON *lp = cJSON_AddObjectToObject(channel, "lowpass");
-      cJSON *hp = cJSON_AddObjectToObject(channel, "highpass");
-
-      cJSON_AddNumberToObject(lp, "freq", config[i].lp_freq);
-      cJSON_AddNumberToObject(lp, "order", config[i].lp_order);
-      cJSON_AddNumberToObject(lp, "q", config[i].lp_q / 32768.0f);
-      cJSON_AddNumberToObject(hp, "freq", config[i].hp_freq);
-      cJSON_AddNumberToObject(hp, "order", config[i].hp_order);
-      cJSON_AddNumberToObject(hp, "q", config[i].hp_q / 32768.0f);
-      cJSON_AddItemToArray(eq, channel);
-    }
-
-    char *resp_buf = cJSON_PrintUnformatted(config_json);
-    cJSON_Delete(config_json);
+    char *resp_buf = cJSON_PrintUnformatted(config);
     free(query_str);
     return httpd_resp_send(req, resp_buf, strlen(resp_buf));
   }
@@ -100,46 +104,45 @@ static esp_err_t api_handler(httpd_req_t *req) {
     char key[10];
     httpd_query_key_value(query_str, "key", key, 10);
 
-    char value[10];
-    httpd_query_key_value(query_str, "value", value, 10);
+    char value[20];
+    httpd_query_key_value(query_str, "value", value, 20);
 
-    char type[10];
-    httpd_query_key_value(query_str, "type", type, 10);
+    if (is_eq_key(key)) {
+      char type[10];
+      httpd_query_key_value(query_str, "type", type, 10);
+      char channel_str[3];
+      httpd_query_key_value(query_str, "channel", channel_str, 3);
+      int channel_number = atoi(channel_str);
+      free(query_str);
 
-    char channel_str[3];
-    httpd_query_key_value(query_str, "channel", channel_str, 3);
-    int channel = atoi(channel_str);
-    free(query_str);
+      if (channel_number < 0 || channel_number > 1)
+        return httpd_resp_send(req, "invalid channel", 15);
 
-    if (channel < 0 || channel > 1)
-      return httpd_resp_send(req, "invalid channel", 15);
+      cJSON *eq = cJSON_GetObjectItem(config, "eq");
+      cJSON *channel = cJSON_GetArrayItem(eq, channel_number);
+      cJSON *pass;
 
-    if (strcmp(key, "freq") == 0 && strcmp(type, "lowpass") == 0) {
-      config[channel].lp_freq = (uint16_t)atoi(value);
-    } else if (strcmp(key, "freq") == 0 && strcmp(type, "highpass") == 0) {
-      config[channel].hp_freq = (uint16_t)atoi(value);
-    } else if (strcmp(key, "q") == 0 && strcmp(type, "lowpass") == 0) {
-      config[channel].lp_q = (uint16_t)(atof(value) * 32768);
-    } else if (strcmp(key, "q") == 0 && strcmp(type, "highpass") == 0) {
-      config[channel].hp_q = (uint16_t)atof(value) * 32768;
-    } else if (strcmp(key, "order") == 0 && strcmp(type, "lowpass") == 0) {
-      config[channel].lp_order = (uint16_t)atoi(value);
-    } else if (strcmp(key, "order") == 0 && strcmp(type, "highpass") == 0) {
-      config[channel].hp_order = (uint16_t)atoi(value);
-    } else
-      return httpd_resp_send(req, "invalid key type combination", 28);
+      if (strcmp(type, "lowpass") == 0)
+        pass = cJSON_GetObjectItem(channel, "lowpass");
+      else
+        pass = cJSON_GetObjectItem(channel, "highpass");
 
-    return httpd_resp_send(req, "ok", 2);
-  }
+      cJSON_SetNumberValue(cJSON_GetObjectItem(pass, key),
+                           (uint16_t)atoi(value));
 
-  if (strcmp(action, "change_name") == 0) {
-    char name[20];
-    httpd_query_key_value(query_str, "name", name, 20);
-    save_name(name);
-    esp_err_t err = httpd_resp_send(req, "ok", 2);
-    sleep(5);
-    change_softap_ssid(name);
-    return err;
+      return httpd_resp_send(req, "ok", 2);
+    } else if (is_setting_key(key)) {
+      cJSON *settings = cJSON_GetObjectItem(config, "settings");
+      cJSON *name = cJSON_GetObjectItem(settings, key);
+      cJSON_SetValuestring(name, value);
+      ESP_LOGE("WATISHIERLOS", "%s %s %s", key, value,
+               cJSON_GetStringValue(name));
+      httpd_resp_send(req, "ok", 2);
+      save_config();
+      sleep(3);
+      esp_restart();
+      return ESP_OK;
+    }
   }
 
   free(query_str);

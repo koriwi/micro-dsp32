@@ -1,7 +1,8 @@
 ---
 import Button from "./Button.astro";
 import Modal from "./Modal.astro";
-import LabelTextInput from "./LabelTextInput.astro";
+import LabelInput from "./LabelInput.astro";
+import LabelSelect from "./LabelSelect.astro";
 import type { HTMLAttributes } from "astro/types";
 interface Props extends HTMLAttributes<"div"> {}
 ---
@@ -10,17 +11,17 @@ interface Props extends HTMLAttributes<"div"> {}
   @import "tailwindcss";
   #st-name:checked ~ * {
     & #name-view {
-      display: flex !important;
+      @apply flex!;
     }
     & [for="st-name"] {
       @apply bg-white text-black;
     }
   }
-  #st-pins:checked ~ * {
-    & #pins-view {
-      display: flex !important;
+  #st-i2s0:checked ~ * {
+    & #i2s0-view {
+      @apply flex!;
     }
-    & [for="st-pins"] {
+    & [for="st-i2s0"] {
       @apply bg-white text-black;
     }
   }
@@ -40,33 +41,101 @@ interface Props extends HTMLAttributes<"div"> {}
         class="hidden"
         type="radio"
         name="settings-tab"
-        value="pins"
-        id="st-pins"
+        value="i2s0"
+        id="st-i2s0"
       />
       <div class="flex">
         <div class="flex gap-0.5 bg-white border border-solid border-white">
           <label class="px-4 py-1 h-full bg-black transition" for="st-name"
             >Name</label
           >
-          <label class="px-4 py-1 h-full bg-black transition" for="st-pins"
-            >Pins</label
+          <label class="px-4 py-1 h-full bg-black transition" for="st-i2s0"
+            >Pins I2S0</label
           >
         </div>
       </div>
-      <div class="border border-solid border-white p-2">
-        <form id="name-view" action="/api" class="hidden flex-col gap-4">
-          <input type="hidden" name="action" value="change_name" />
-          <LabelTextInput name="name" value="lul" label="Name (in wifi)" />
-          <div class="flex gap-2 justify-end">
-            <Button onclick="modal-settings-close" text="Cancel" />
-            <Button text="Save" />
+      <div
+        class="flex border border-solid border-white p-2 *:transition-all min-h-full md:min-h-[500px]"
+      >
+        <form
+          id="name-view"
+          action="/api"
+          class="hidden flex-col justify-between gap-4 w-full"
+        >
+          <input type="hidden" name="action" value="set" />
+          <input type="hidden" name="key" value="name" />
+          <LabelInput id="name" name="value" value="" label="Name (in wifi)" />
+          <div>
+            <p>
+              This will restart the device automatically after you press
+              "Apply". Don't forget to connect to the new wifi.
+            </p>
+            <div class="flex gap-2 justify-end">
+              <Button text="Apply" />
+            </div>
           </div>
         </form>
-        <form id="pins-view" action="/api" class="hidden">
-          <input type="hidden" name="action" value="change_pins" />
-          laalalalaal2
-          <Button onclick="modal-settings-close" text="Cancel" />
-          <Button text="Save" />
+        <form
+          id="i2s0-view"
+          action="/api"
+          class="hidden flex-col gap-2 w-full justify-between"
+        >
+          <input type="hidden" name="action" value="set" />
+          <input type="hidden" name="key" value="pins" />
+          <input type="hidden" name="value" value="i2s0" />
+          <div>
+            <LabelSelect label="I2S mode" id="mode0" name="mode" required>
+              <option value="" disabled selected>please choose</option>
+              <option value="master">Master</option>
+              <option value="slave">Slave</option>
+            </LabelSelect>
+
+            <LabelInput
+              id="sck0"
+              name="sck"
+              value=""
+              label="SCK/BCLK"
+              type="number"
+              min="0"
+              max="39"
+              step="1"
+              required
+            />
+            <LabelInput
+              id="ws0"
+              name="ws"
+              value=""
+              label="WS/LRCLK"
+              type="number"
+              min="0"
+              max="39"
+              step="1"
+              required
+            />
+            <LabelInput
+              id="sd0"
+              name="sd"
+              value=""
+              label="SD"
+              type="number"
+              min="0"
+              max="39"
+              step="1"
+              required
+            />
+          </div>
+          <div>
+            <p>
+              This will restart the device automatically after you press
+              "Apply". This is the I2S for the input and the output of channel 1
+              and 2. If you use an ADC as input, select master mode. If you use
+              another device as input, like a squeezelite-esp32, select slave
+              mode.
+            </p>
+            <div class="flex gap-2 justify-end">
+              <Button text="Apply" />
+            </div>
+          </div>
         </form>
       </div>
     </div>
@@ -81,6 +150,7 @@ interface Props extends HTMLAttributes<"div"> {}
     constructor() {
       super();
       this.nameInput = this.querySelector("#name")!;
+      console.log(this.nameInput);
     }
     private hide() {
       this.classList.add("hidden");

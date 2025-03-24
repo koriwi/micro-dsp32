@@ -1,3 +1,4 @@
+#include "cJSON.h"
 #include "config.h"
 #include "esp_event.h"
 #include "esp_log.h"
@@ -8,6 +9,7 @@
 
 #define SSID_BASE "micro-dsp32-"
 #define PASSWORD "microdsp32"
+extern cJSON *config;
 
 void change_softap_ssid(char *name) {
   char ssid[32];
@@ -39,16 +41,6 @@ void wifi_init_softap(void) {
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-  uint8_t mac[6];
-  esp_wifi_get_mac(WIFI_IF_AP, mac);
-
-  char ssid[32];
-  snprintf(ssid, sizeof(ssid), "%s%02X%02X%02X", SSID_BASE, mac[3], mac[4],
-           mac[5]);
-
-  char name[20];
-  get_name(name, 20);
-
   wifi_config_t wifi_config = {
       .ap = {.ssid = "",
              .password = PASSWORD,
@@ -58,8 +50,11 @@ void wifi_init_softap(void) {
              .max_connection = 4},
   };
 
-  if (strlen(name) > 0)
-    snprintf(ssid, sizeof(ssid), "%s%s", SSID_BASE, name);
+  char *name =
+      cJSON_GetStringValue(cJSON_GetObjectItemNested(config, "settings.name"));
+
+  char ssid[32];
+  snprintf(ssid, sizeof(ssid), "%s%s", SSID_BASE, name);
   strcpy((char *)wifi_config.ap.ssid, ssid);
 
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));

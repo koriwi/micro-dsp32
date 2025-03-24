@@ -48,7 +48,7 @@ const bgImage =
     <input type="radio" name="channel" value="1" id="ch1" class="hidden" />
     <div class="flex items-end justify-between">
       <h1
-        id="name"
+        id="name-title"
         class="text-2xl p-1 px-4 border border-solid border-white bg-white text-black rounded-t inline-block text-center"
       >
         Equalizer
@@ -91,7 +91,7 @@ const bgImage =
     <div class="flex justify-between pt-4">
       <!-- <Button text="Change name" onclick="change_name" /> -->
       <Button text="Settings" onclick="modal-settings-open" />
-      <Button text="Save EQ" onclick="save_eq" />
+      <Button text="Save to NVS" onclick="save_nvs" />
     </div>
   </div>
 
@@ -102,6 +102,14 @@ const bgImage =
     import { createChartConfig } from "../chart";
     import { throttled } from "../utils.ts";
 
+    document.querySelectorAll("form").forEach((form) => {
+      console.log(form);
+      form.addEventListener("submit", (e) => {
+        console.log("lul");
+        e.preventDefault();
+      });
+    });
+
     const lowpassElems = [
       document.getElementById("lowpass0") as HTMLElement,
       document.getElementById("lowpass1") as HTMLElement,
@@ -111,7 +119,7 @@ const bgImage =
       document.getElementById("highpass1") as HTMLElement,
     ];
 
-    const title = document.getElementById("name") as HTMLHeadingElement;
+    const title = document.getElementById("name-title") as HTMLHeadingElement;
     const settings = document.getElementById("settings-modal");
 
     let newConfig: DeviceConfig;
@@ -136,7 +144,7 @@ const bgImage =
       };
     }
     deviceConfig.set(newConfig);
-    title.innerText = newConfig.name;
+    title.innerText = newConfig.settings.name;
     settings?.setAttribute("settings", JSON.stringify(newConfig.settings));
 
     for (let i = 0; i < 2; i++) {
@@ -156,7 +164,7 @@ const bgImage =
 
     const chart = new Chart(graphCanvas, createChartConfig(data1, data2));
 
-    window.addEventListener("save_eq", async (_e) => {
+    window.addEventListener("save_nvs", async (_e) => {
       console.log("saving");
       await fetch("/api?action=save");
     });
