@@ -71,7 +71,7 @@ bool is_eq_key(char *find) {
   }
   return false;
 }
-char *setting_keys[] = {"name"};
+char *setting_keys[] = {"wifi", "i2s0", "i2s1"};
 bool is_setting_key(char *find) {
   int len = sizeof(setting_keys) / sizeof(setting_keys[0]);
   int i;
@@ -83,7 +83,44 @@ bool is_setting_key(char *find) {
   }
   return false;
 }
+esp_err_t set_sub_keys(cJSON *config, char *query) {
+  char *part = strsep(&query, "=&");
 
+  bool skip_val = false;
+  char *key = "";
+  int i = 0;
+  while (part != NULL) {
+    ESP_LOGE("TOKEN", "part %i %s", i, part);
+    if (i % 2 == 0) {
+      // we have the key here
+      if (strcmp("key", part) == 0 || strcmp("value", part) == 0) {
+        skip_val = true;
+      } else {
+        key = malloc(sizeof(char) * strlen(part));
+        strcpy(key, part);
+      }
+    } else {
+      // we have the value here
+      if (skip_val)
+        skip_val = false;
+      else {
+        cJSON *item = cJSON_GetObjectItem(config, key);
+        ESP_LOGE("SETTING", "%s: %s", key, part);
+        free(key);
+        int int_val = atoi(part);
+        bool is_int = int_val != 0 || strcmp(part, "0") == 0;
+        if (is_int)
+          cJSON_SetIntValue(item, int_val);
+        else
+          cJSON_SetValuestring(item, part);
+      }
+    }
+    i++;
+    part = strsep(&query, "=&");
+  };
+  ESP_LOGE("TOKEN BABY", "%s", cJSON_Print(config));
+  return ESP_OK;
+}
 static esp_err_t api_handler(httpd_req_t *req) {
   size_t query_len;
   query_len = httpd_req_get_url_query_len(req) + 1;
@@ -133,10 +170,8 @@ static esp_err_t api_handler(httpd_req_t *req) {
       return httpd_resp_send(req, "ok", 2);
     } else if (is_setting_key(key)) {
       cJSON *settings = cJSON_GetObjectItem(config, "settings");
-      cJSON *name = cJSON_GetObjectItem(settings, key);
-      cJSON_SetValuestring(name, value);
-      ESP_LOGE("WATISHIERLOS", "%s %s %s", key, value,
-               cJSON_GetStringValue(name));
+      cJSON *setting = cJSON_GetObjectItem(settings, key);
+      set_sub_keys(setting, query_str);
       httpd_resp_send(req, "ok", 2);
       save_config();
       sleep(3);

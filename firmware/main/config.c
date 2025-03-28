@@ -57,7 +57,21 @@ void init_config_with_defaults() {
   config = cJSON_CreateObject();
   cJSON *settings = cJSON_AddObjectToObject(config, "settings");
 
-  cJSON_AddStringToObject(settings, "name", name);
+  cJSON *wifi = cJSON_AddObjectToObject(settings, "wifi");
+  cJSON_AddStringToObject(wifi, "name", name);
+
+  cJSON *i2s0 = cJSON_AddObjectToObject(settings, "i2s0");
+  cJSON_AddNumberToObject(i2s0, "ws", 22);
+  cJSON_AddNumberToObject(i2s0, "bck", 32);
+  cJSON_AddNumberToObject(i2s0, "mck", 27);
+  cJSON_AddNumberToObject(i2s0, "sdo", 25);
+  cJSON_AddNumberToObject(i2s0, "sdi", 21);
+  cJSON *i2s1 = cJSON_AddObjectToObject(settings, "i2s1");
+  cJSON_AddNumberToObject(i2s1, "ws", 14);
+  cJSON_AddNumberToObject(i2s1, "bck", 15);
+  cJSON_AddNumberToObject(i2s1, "mck", 16);
+  cJSON_AddNumberToObject(i2s1, "sdo", 16);
+  cJSON_AddNumberToObject(i2s1, "sdi", 16);
 
   cJSON *eq = cJSON_AddArrayToObject(config, "eq");
 

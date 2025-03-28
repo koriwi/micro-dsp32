@@ -50,8 +50,8 @@ void wifi_init_softap(void) {
              .max_connection = 4},
   };
 
-  char *name =
-      cJSON_GetStringValue(cJSON_GetObjectItemNested(config, "settings.name"));
+  char *name = cJSON_GetStringValue(
+      cJSON_GetObjectItemNested(config, "settings.wifi.name"));
 
   char ssid[32];
   snprintf(ssid, sizeof(ssid), "%s%s", SSID_BASE, name);

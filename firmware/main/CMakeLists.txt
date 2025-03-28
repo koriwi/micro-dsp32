@@ -4,6 +4,7 @@ idf_component_register(
     "wifi.c"
     "webserver.c"
     "config.c"
+    "audio.c"
 
   EMBED_FILES
     "../../webapp/dist/gz/index.html.gz"
