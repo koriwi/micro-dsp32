@@ -26,8 +26,10 @@ const { text, onclick, ...rest } = Astro.props;
       this.addEventListener("click", (e) => {
         const onClick = this.dataset.onclick?.trim();
         if (!!onClick) window.dispatchEvent(new CustomEvent(onClick));
-        else {
-          this.closest("form")?.submit();
+        else if (this.closest("form")?.checkValidity()) {
+          const form = this.closest("form");
+          const submitEvent = new Event("submit", { cancelable: true });
+          form?.dispatchEvent(submitEvent);
         }
       });
     }

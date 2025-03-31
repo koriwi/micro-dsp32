@@ -28,3 +28,32 @@ import "../style.css";
     <slot />
   </body>
 </html>
+<script>
+  // make all forms submit, but not navigate :)
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("form").forEach((form) => {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault(); // Prevent page navigation
+        let url = form.getAttribute("action")!;
+        const formData = new FormData(form);
+        const params: RequestInit = {
+          method: form.method || "GET",
+        };
+        if (form.method === "POST") {
+          params.body = formData;
+        } else {
+          // @ts-expect-error
+          const queryString = new URLSearchParams(formData).toString();
+          url += url.includes("?") ? `&${queryString}` : `?${queryString}`;
+        }
+        const response = await fetch(url, params);
+
+        if (response.ok) {
+          console.log("Form submitted successfully!");
+        } else {
+          console.error("Form submission failed!", response.statusText);
+        }
+      });
+    });
+  });
+</script>

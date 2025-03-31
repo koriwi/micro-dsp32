@@ -63,8 +63,8 @@ interface Props extends HTMLAttributes<"div"> {}
           class="hidden flex-col justify-between gap-4 w-full"
         >
           <input type="hidden" name="action" value="set" />
-          <input type="hidden" name="key" value="name" />
-          <LabelInput id="name" name="value" value="" label="Name (in wifi)" />
+          <input type="hidden" name="key" value="wifi" />
+          <LabelInput id="name" name="name" value="" label="Name (in wifi)" />
           <div>
             <p>
               This will restart the device automatically after you press
@@ -81,18 +81,28 @@ interface Props extends HTMLAttributes<"div"> {}
           class="hidden flex-col gap-2 w-full justify-between"
         >
           <input type="hidden" name="action" value="set" />
-          <input type="hidden" name="key" value="pins" />
-          <input type="hidden" name="value" value="i2s0" />
+          <input type="hidden" name="key" value="i2s0" />
           <div>
-            <LabelSelect label="I2S mode" id="mode0" name="mode" required>
+            <LabelSelect label="I2S mode" id="master0" name="master" required>
               <option value="" disabled selected>please choose</option>
-              <option value="master">Master</option>
-              <option value="slave">Slave</option>
+              <option value="0">Master</option>
+              <option value="1">Slave</option>
             </LabelSelect>
 
             <LabelInput
-              id="sck0"
-              name="sck"
+              id="mclk0"
+              name="mclk"
+              value=""
+              label="MCLK"
+              type="number"
+              min="0"
+              max="39"
+              step="1"
+              required
+            />
+            <LabelInput
+              id="bclk0"
+              name="bclk"
               value=""
               label="SCK/BCLK"
               type="number"
@@ -113,10 +123,21 @@ interface Props extends HTMLAttributes<"div"> {}
               required
             />
             <LabelInput
-              id="sd0"
-              name="sd"
+              id="din0"
+              name="din"
               value=""
-              label="SD"
+              label="DIn"
+              type="number"
+              min="0"
+              max="39"
+              step="1"
+              required
+            />
+            <LabelInput
+              id="dout0"
+              name="dout"
+              value=""
+              label="DOut"
               type="number"
               min="0"
               max="39"
@@ -146,11 +167,22 @@ interface Props extends HTMLAttributes<"div"> {}
     static observedAttributes = ["settings"];
 
     nameInput: HTMLInputElement;
+    masterInput: HTMLInputElement;
+    mclkInput: HTMLInputElement;
+    bclkInput: HTMLInputElement;
+    wsInput: HTMLInputElement;
+    dinInput: HTMLInputElement;
+    doutInput: HTMLInputElement;
 
     constructor() {
       super();
       this.nameInput = this.querySelector("#name")!;
-      console.log(this.nameInput);
+      this.masterInput = this.querySelector("#master0")!;
+      this.mclkInput = this.querySelector("#mclk0")!;
+      this.bclkInput = this.querySelector("#bclk0")!;
+      this.wsInput = this.querySelector("#ws0")!;
+      this.dinInput = this.querySelector("#din0")!;
+      this.doutInput = this.querySelector("#dout0")!;
     }
     private hide() {
       this.classList.add("hidden");
@@ -190,7 +222,14 @@ interface Props extends HTMLAttributes<"div"> {}
       if (name !== "settings") return;
       const config = JSON.parse(newValue || "{}");
 
-      if (config.name) this.nameInput.value = config.name;
+      if (config.wifi.name != null) this.nameInput.value = config.wifi.name;
+      if (config.i2s0.master != null)
+        this.masterInput.value = config.i2s0.master;
+      if (config.i2s0.mclk != null) this.mclkInput.value = config.i2s0.mclk;
+      if (config.i2s0.bclk != null) this.bclkInput.value = config.i2s0.bclk;
+      if (config.i2s0.ws != null) this.wsInput.value = config.i2s0.ws;
+      if (config.i2s0.din != null) this.dinInput.value = config.i2s0.din;
+      if (config.i2s0.dout != null) this.doutInput.value = config.i2s0.dout;
     }
   }
   customElements.define("settings-modal", SettingsModal);

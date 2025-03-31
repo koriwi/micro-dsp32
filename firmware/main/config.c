@@ -61,17 +61,19 @@ void init_config_with_defaults() {
   cJSON_AddStringToObject(wifi, "name", name);
 
   cJSON *i2s0 = cJSON_AddObjectToObject(settings, "i2s0");
-  cJSON_AddNumberToObject(i2s0, "ws", 22);
-  cJSON_AddNumberToObject(i2s0, "bck", 32);
-  cJSON_AddNumberToObject(i2s0, "mck", 27);
-  cJSON_AddNumberToObject(i2s0, "sdo", 25);
-  cJSON_AddNumberToObject(i2s0, "sdi", 21);
+  cJSON_AddNumberToObject(i2s0, "master", 0); // 0 is master, 1 is slave
+  cJSON_AddNumberToObject(i2s0, "ws", 32);
+  cJSON_AddNumberToObject(i2s0, "bclk", 4);
+  cJSON_AddNumberToObject(i2s0, "mclk", 0);
+  cJSON_AddNumberToObject(i2s0, "dout", 33);
+  cJSON_AddNumberToObject(i2s0, "din", 12);
   cJSON *i2s1 = cJSON_AddObjectToObject(settings, "i2s1");
+  cJSON_AddBoolToObject(i2s1, "master", true);
   cJSON_AddNumberToObject(i2s1, "ws", 14);
-  cJSON_AddNumberToObject(i2s1, "bck", 15);
-  cJSON_AddNumberToObject(i2s1, "mck", 16);
-  cJSON_AddNumberToObject(i2s1, "sdo", 16);
-  cJSON_AddNumberToObject(i2s1, "sdi", 16);
+  cJSON_AddNumberToObject(i2s1, "bclk", 15);
+  cJSON_AddNumberToObject(i2s1, "mclk", 16);
+  cJSON_AddNumberToObject(i2s1, "dout", 16);
+  cJSON_AddNumberToObject(i2s1, "din", 16);
 
   cJSON *eq = cJSON_AddArrayToObject(config, "eq");
 

@@ -5,6 +5,7 @@ idf_component_register(
     "webserver.c"
     "config.c"
     "audio.c"
+    "debug_audio.c"
 
   EMBED_FILES
     "../../webapp/dist/gz/index.html.gz"

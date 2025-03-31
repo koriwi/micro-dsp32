@@ -102,14 +102,6 @@ const bgImage =
     import { createChartConfig } from "../chart";
     import { throttled } from "../utils.ts";
 
-    document.querySelectorAll("form").forEach((form) => {
-      console.log(form);
-      form.addEventListener("submit", (e) => {
-        console.log("lul");
-        e.preventDefault();
-      });
-    });
-
     const lowpassElems = [
       document.getElementById("lowpass0") as HTMLElement,
       document.getElementById("lowpass1") as HTMLElement,
@@ -129,7 +121,25 @@ const bgImage =
     } catch {
       newConfig = {
         settings: {
-          name: "dev-mode",
+          wifi: {
+            name: "dev-mode",
+          },
+          i2s0: {
+            master: 0,
+            mclk: 1,
+            bclk: 2,
+            ws: 3,
+            din: 4,
+            dout: 5,
+          },
+          i2s1: {
+            master: 10,
+            mclk: 11,
+            bclk: 12,
+            ws: 13,
+            din: 14,
+            dout: 15,
+          },
         },
         eq: [
           {
@@ -144,7 +154,7 @@ const bgImage =
       };
     }
     deviceConfig.set(newConfig);
-    title.innerText = newConfig.settings.name;
+    title.innerText = newConfig.settings.wifi.name;
     settings?.setAttribute("settings", JSON.stringify(newConfig.settings));
 
     for (let i = 0; i < 2; i++) {

@@ -45,9 +45,8 @@ export const createChartConfig = (dataChannel1: any, dataChannel2: any) => {
           titleColor: "#fff", // Tooltip title color
           bodyColor: "#fff", // Tooltip body color
           callbacks: {
-            title: (item: TooltipItem<"line">[]) => (
-              console.log(item), item[0].parsed.x.toFixed(0) + " Hz"
-            ),
+            title: (item: TooltipItem<"line">[]) =>
+              item[0].parsed.x.toFixed(0) + " Hz",
             label: (item: TooltipItem<"line">) =>
               item.parsed.y.toFixed(1) + " dB",
           },

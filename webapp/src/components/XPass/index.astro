@@ -131,7 +131,6 @@ const { pass, id, channel } = Astro.props;
     ) {
       if (name !== "config") return;
       const config = JSON.parse(newValue ?? "{}");
-      console.log(config);
       if (config.freq) {
         this.passFreq.value = config.freq;
         this.passFreqRange.value = fromLog(parseInt(config.freq)).toString();
